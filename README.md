@@ -1,8 +1,8 @@
-**Onilex Fs - File System Abstraction**
+**Ts Fs - File System Abstraction**
 
 This is a small library used to abstract file/folder names in typescript. It tries to use the type system to help you avoid functional errors that can be caused by wrong file/folder names when plain strings are used.
 
-##Example
+**Example**
 ```typescript
 import { AbsoluteFileName } from 'onilex-fs';
 
@@ -15,6 +15,9 @@ console.log(file.parent.value); // /home/user/Documents
 console.log(file.parent.name); // Documents
 console.log(file.parent.parent.value); // /home/user
 ```
+
+**LICENSE**
+MIT
 
 **todo:**
 - currently all paths when are converted from string to objects are "eagrly" converted to objects which is not optimal as it uses more memory than needed. This should be changed to "lazy" conversion, so all parents are initialized only when needed, not ahead of time.
