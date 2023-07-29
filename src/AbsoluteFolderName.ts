@@ -3,8 +3,7 @@ import { FSName } from "./FSName";
 import { FileName } from "./FileName";
 import { Name } from "./Name";
 import { normalizePath } from "./utils/normalizePath";
-
-type Cfunc<T> = (name: AbsoluteFolderName) => T;
+import fs from "fs";
 
 /**
  * Absolute folder name is a folder name that starts with slash and can contain parent folder that
@@ -60,6 +59,37 @@ export class AbsoluteFolderName implements FSName {
         for (const key in children) {
             (this as any)[key] = (children as any)[key];
         }
+    }
+
+    exists(): boolean {
+        return fs.existsSync(this.value);
+    }
+
+    create(ignoreExisting?: boolean): void {
+        if (!this.exists()) {
+            fs.mkdirSync(this.value, { recursive: true });
+            return;
+        } 
+        
+        if (!ignoreExisting)
+            throw new Error(`Folder ${this.value} already exists`);
+    }
+
+    recreate(): void {
+        if (this.exists())
+            fs.rmdirSync(this.value, { recursive: true });
+
+        fs.mkdirSync(this.value, { recursive: true });
+    }
+
+    delete(ignoreIfNotExists?: boolean): void {
+        if (this.exists()) {
+            fs.rmdirSync(this.value, { recursive: true });
+            return;
+        }
+
+        if (!ignoreIfNotExists)
+            throw new Error(`Folder ${this.value} doesn't exist`);
     }
 
     static parse = (name: string): [Name, AbsoluteFolderName | undefined] => {

@@ -1,6 +1,7 @@
 import { AbsoluteFolderName } from "./AbsoluteFolderName";
 import { FSName } from "./FSName";
 import { FileName } from "./FileName";
+import fs from "fs";
 
 /**
  * Absolute file name is a file name that starts with slash and can contain parent folder that
@@ -27,6 +28,41 @@ export class AbsoluteFileName implements FSName {
     readonly value: string;
     readonly name: FileName;
     readonly parent?: AbsoluteFolderName;
+
+    exists(): boolean {
+        return fs.existsSync(this.value);
+    }
+
+    delete(ignoreIfNotExists?: boolean): void {
+        if (this.exists()) {
+            fs.rmSync(this.value);
+            return;
+        }
+
+        if (!ignoreIfNotExists)
+            throw new Error(`File ${this.value} doesn't exist`);
+    }
+
+    copyTo(target: AbsoluteFolderName | AbsoluteFileName, overwrite?: boolean): void {
+        if (!this.exists())
+            throw new Error(`File ${this.value} doesn't exist`);
+
+        const targetFileName = target instanceof AbsoluteFolderName
+            ? target.file(this.name)
+            : target;
+
+        if (targetFileName.exists() && !overwrite)
+            throw new Error(`Folder ${target.value} already exists`);
+
+        fs.copyFileSync(this.value, targetFileName.value);
+    }
+
+    write(content: string, overwrite?: boolean): void {
+        if (this.exists() && !overwrite)
+            throw new Error(`File ${this.value} already exists`);
+
+        fs.writeFileSync(this.value, content);
+    }
 
     static parse = (name: string): [AbsoluteFolderName | undefined, FileName] => {
         if (name.endsWith("/"))

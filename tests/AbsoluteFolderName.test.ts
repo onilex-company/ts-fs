@@ -1,5 +1,8 @@
-import { describe, expect, test, it } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { AbsoluteFolderName } from "../src/AbsoluteFolderName";
+import { fs } from "./utils/fs";
+
+const sandbox = fs.sandbox.absoluteFolderTests;
 
 describe('Absolute Folder Name unit test"', () => {
     describe("parse", () => {
@@ -58,6 +61,30 @@ describe('Absolute Folder Name unit test"', () => {
             expect(root.folder1.file1.value).toBe("/root/folder1/file1");
             expect(root.file2.value).toBe("/root/file2");
             expect(root.folder1.folder2.parent).toBe(root.folder1);
+        });
+    });
+
+    describe("Testing helper functions", () => {
+        it ("should clean sandbox if exists", () => {
+            sandbox.delete(true)
+        });
+
+        it ("should create folder", () => {
+            expect(sandbox.createFolderTest.exists()).toBe(false);
+            sandbox.createFolderTest.create();
+            expect(sandbox.createFolderTest.exists()).toBe(true);
+        });
+
+        it ("should recreate folder", () => {
+            expect(sandbox.createFolderTest.exists()).toBe(true);
+            sandbox.createFolderTest.recreate();
+            expect(sandbox.createFolderTest.exists()).toBe(true);
+        });
+
+        it ("should delete folder", () => {
+            expect(sandbox.createFolderTest.exists()).toBe(true);
+            sandbox.createFolderTest.delete();
+            expect(sandbox.createFolderTest.exists()).toBe(false);
         });
     });
 });
