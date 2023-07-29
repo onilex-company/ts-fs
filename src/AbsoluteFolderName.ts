@@ -1,22 +1,24 @@
+import { AbsoluteFileName } from "./AbsoluteFileName";
 import { FSName } from "./FSName";
+import { FileName } from "./FileName";
 import { Name } from "./Name";
 import { normalizePath } from "./utils/normalizePath";
+
+type Cfunc<T> = (name: AbsoluteFolderName) => T;
 
 /**
  * Absolute folder name is a folder name that starts with slash and can contain parent folder that
  * must be absolute folder name or undefined (if folder is at the root)
  */
 export class AbsoluteFolderName implements FSName {
-    constructor(name: Name, parent?: AbsoluteFolderName);
-    constructor(name: string);
-    constructor(p1: Name | string, p2?: AbsoluteFolderName) {
-        if (typeof p1 === "string") {
-            const parsed = AbsoluteFolderName.parse(p1);
+    constructor(name: Name | string, parent?: AbsoluteFolderName) {
+        if (typeof name === "string") {
+            const parsed = AbsoluteFolderName.parse(name);
             this.parent = parsed[1];
             this.name = parsed[0];
         } else {
-            this.parent = p2!;
-            this.name = p1;
+            this.parent = parent!;
+            this.name = name;
         }
 
         this.value = this.parent ?
@@ -27,6 +29,38 @@ export class AbsoluteFolderName implements FSName {
     readonly value: string;
     readonly name: Name;
     readonly parent: AbsoluteFolderName | undefined;
+
+    file(name: string): AbsoluteFileName
+    file(fileName: FileName): AbsoluteFileName
+    file(p: FileName | string) : AbsoluteFileName {
+        if (typeof p === "string")
+            return new AbsoluteFileName(new FileName(p), this);
+        else
+            return new AbsoluteFileName(p, this);
+    }
+
+    folder(name: string): AbsoluteFolderName
+    folder(folderName: Name): AbsoluteFolderName
+    folder(p: Name | string): AbsoluteFolderName {
+        if (typeof p === "string")
+            return new AbsoluteFolderName(new Name(p), this);
+        else
+            return new AbsoluteFolderName(p, this);
+    }
+
+    with<T extends {}>(children: (name: AbsoluteFolderName) => T): AbsoluteFolderName & T {
+        const newDefinition = new AbsoluteFolderName(this.name, this.parent) as AbsoluteFolderName & T;
+        const res = children(newDefinition);
+        newDefinition.setChildren(res);
+        return newDefinition;
+    }
+
+    private setChildren<T extends {}>(children: T) {
+        // read keys/values from children and inject into this class
+        for (const key in children) {
+            (this as any)[key] = (children as any)[key];
+        }
+    }
 
     static parse = (name: string): [Name, AbsoluteFolderName | undefined] => {
         if (!name.startsWith("/"))
@@ -47,4 +81,3 @@ export class AbsoluteFolderName implements FSName {
         }
     }
 }
-

@@ -1,11 +1,12 @@
 {
-  "name": "ts-fs",
-  "version": "1.0.0",
+  "name": "ts-fs-utils",
+  "version": "1.0.7",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "rm -rf ./dist; tsc; cp package.json ./dist; cp README.md ./dist",
+    "publish-build": "npm run build; cd ./dist; npm publish"
   },
-  "private": true,
+  "private": false,
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.22.9",
